@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Serilog;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Terminal.Gui;
@@ -9,10 +10,15 @@ namespace Ghoplin
     {
         static void Main(string[] args)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .WriteTo.Console()
+                .CreateLogger();
+            
             var joplinConfig = File.ReadAllText(".ghoplin").Split();
             var token = joplinConfig[0];
             var port = joplinConfig.Length > 1 ? int.Parse(joplinConfig[1]) : 41184;
-            Joplin.Sync(
+            GhoplinApi.Sync(
                 $"http://localhost:{port}/",
                 token)
                 .Wait();

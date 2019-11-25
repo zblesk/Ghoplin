@@ -12,7 +12,7 @@ namespace Ghoplin
 
     public class GhostService
     {
-        public async Task<IList<JoplinNote>> LoadBlogPostsSince(string blogUrl, string apiKey, DateTime since)
+        public async Task<IList<Note>> LoadBlogPostsSince(string blogUrl, string apiKey, DateTime since)
         {
             if (string.IsNullOrWhiteSpace(blogUrl)
                 || string.IsNullOrWhiteSpace(apiKey))
@@ -33,23 +33,23 @@ namespace Ghoplin
                 .GetAsync()
                 .ReceiveJson()
                 .ConfigureAwait(false);
-            var results = new List<JoplinNote>();
+            var results = new List<Note>();
             foreach (dynamic post in response.posts)
             {
-                var timeline = new JoplinNote
+                var note = new Note
                 {
                     Title = post.title,
                     Content = post.html,
                     Timestamp = post.published_at,
                     Url = post.url,
                 };
-                results.Add(timeline);
+                results.Add(note);
                 var tags = new List<string>();
                 foreach (dynamic tag in post.tags)
                 {
                     tags.Add(tag.name);
                 }
-                timeline.Tags = tags;
+                note.Tags = tags;
             }
             return results;
         }
