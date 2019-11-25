@@ -9,9 +9,11 @@ namespace Ghoplin
     {
         static void Main(string[] args)
         {
-            var token = File.ReadAllText(".ghoplin").Trim();
-            Joplin.Do(
-                "http://localhost:41184/",
+            var joplinConfig = File.ReadAllText(".ghoplin").Split();
+            var token = joplinConfig[0];
+            var port = joplinConfig.Length > 1 ? int.Parse(joplinConfig[1]) : 41184;
+            Joplin.Sync(
+                $"http://localhost:{port}/",
                 token)
                 .Wait();
             //Gui();
