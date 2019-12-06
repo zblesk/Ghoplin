@@ -18,9 +18,14 @@ namespace Ghoplin
             var joplinConfig = File.ReadAllText(".ghoplin").Split();
             var token = joplinConfig[0];
             var port = joplinConfig.Length > 1 ? int.Parse(joplinConfig[1]) : 41184;
-            GhoplinApi.Sync(
+            var ghoplin = new GhoplinApi(
                 $"http://localhost:{port}/",
-                token)
+                token);
+            ghoplin.AddBlog(
+                "https://zblesk.net/sk",
+                "a322a248fdbfcd4b575e282494",
+                "blog 1",
+                "zblesk-sk", "slovensky-blog")
                 .Wait();
             //Gui();
         }

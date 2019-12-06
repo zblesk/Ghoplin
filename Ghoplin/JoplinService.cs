@@ -1,8 +1,11 @@
 ﻿using Flurl;
 using Flurl.Http;
+using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ghoplin
@@ -37,6 +40,7 @@ namespace Ghoplin
 
         public async Task UpdateConfigNote(GhoplinConfig ghostConfig)
         {
+            ghostConfig.LastRun = DateTime.UtcNow;
             await _apiUrl
                 .AppendPathSegments("notes", ConfigNoteId)
                 .SetQueryParam("token", _token)
@@ -64,6 +68,44 @@ namespace Ghoplin
                             .SetQueryParam("token", _token)
                             .GetStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<List<Tag>>(allTags);
+        }
+
+        public async Task<NotebookList> GetNotebooks()
+        {
+            var notebookList = await _apiUrl
+                .AppendPathSegments("folders")
+                .SetQueryParam("token", _token)
+                .GetJsonListAsync().ConfigureAwait(false);
+       
+            return new NotebookList(notebookList.Select(nb => (Notebook)CreateNotebook(nb)).ToList());
+        }
+
+        private Notebook CreateNotebook(dynamic notebookData, Notebook parent = null)
+        {
+            var notebook = new Notebook
+            {
+                Id = notebookData.id,
+                Title = notebookData.title,
+                NoteCount = notebookData.note_count,
+                ParentId = notebookData.parent_id,
+                Parent = parent,
+                Children = Enumerable.Empty<Notebook>(),
+            };
+            Debug.Assert(string.IsNullOrWhiteSpace(notebook.ParentId) || notebook.ParentId == notebook.Parent.Id);
+            try
+            {
+                var children = new List<Notebook>();
+                foreach (var child in notebookData.children)
+                {
+                    children.Add(CreateNotebook(child, notebook));
+                }
+                notebook.Children = children;
+            }
+            catch (RuntimeBinderException ex) when (ex.Message == "'System.Dynamic.ExpandoObject' does not contain a definition for 'children'")
+            {
+                // No children. Do nothing.
+            }
+            return notebook;
         }
 
         public async Task<string> CreateNote(string notebookId, Note note)
@@ -113,6 +155,15 @@ namespace Ghoplin
                     id = note.Id
                 })
                 .ConfigureAwait(false);
+        }
+
+        public async Task<Notebook> GetNotebookById(string id)
+        {
+            var notebookResponse = await _apiUrl
+                .AppendPathSegments("folders", id)
+                .SetQueryParam("token", _token)
+                .GetStringAsync().ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<Notebook>(notebookResponse);
         }
     }
 }
