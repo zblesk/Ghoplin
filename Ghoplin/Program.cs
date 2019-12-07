@@ -21,11 +21,7 @@ namespace Ghoplin
             var ghoplin = new GhoplinApi(
                 $"http://localhost:{port}/",
                 token);
-            ghoplin.AddBlog(
-                "https://zblesk.net/sk",
-                "a322a248fdbfcd4b575e282494",
-                "blog 1",
-                "zblesk-sk", "slovensky-blog")
+            ghoplin.Sync()
                 .Wait();
             //Gui();
         }

@@ -1,4 +1,5 @@
 ﻿using Flurl.Http;
+using Polly;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -26,9 +27,9 @@ namespace Ghoplin
         {
             Log.Debug("Starting Sync");
             var config = await LoadConfig();
-            var tags = await _joplin.LoadTags();
+            var tags = await _joplin.LoadTags(); 
             var totalNewNotes = 0;
-            foreach (var blog in config.Blogs)
+            foreach (var blog in config.Blogs.Where(blog => !blog.Disabled))
             {
                 try
                 {
@@ -40,7 +41,7 @@ namespace Ghoplin
                 }
             }
             Log.Debug("Done. Added {newNotes} new notes.", totalNewNotes);
-            await _joplin.UpdateConfigNote(config);
+       //     await _joplin.UpdateConfigNote(config);
         }
 
         public async Task AddBlog(string apiKey, string blogUrl, string notebookId, params string[] autoTags)
@@ -68,7 +69,7 @@ namespace Ghoplin
             {
                 ApiKey = apiKey,
                 BlogUrl = blogUrl,
-                NotebookId = notebookId,
+                NotebookId = notebook.Id,
                 AutoTags = autoTags == null
                     ? new List<string>()
                     : autoTags.ToList()
@@ -103,12 +104,12 @@ namespace Ghoplin
         }
 
         private async Task<GhoplinConfig> LoadConfig() => await _joplin.GetConfigNote() ?? await _joplin.CreateConfigNote();
-        
+
         private async Task AddNoteTags(JoplinService joplin, BlogConfig blogConfig, List<Tag> tags, Note note)
         {
             foreach (var noteTag in note.Tags.Union(blogConfig.AutoTags).Distinct())
             {
-                var tag = tags.Find(t => t.Title == noteTag);
+                var tag = tags.Find(t => t.Title == noteTag.ToLower());
                 if (tag == null)
                 {
                     Log.Debug("Creating tag {tagName}", noteTag);
@@ -120,7 +121,7 @@ namespace Ghoplin
             }
         }
 
-        private async Task<int> ProcessSingleBlog(JoplinService joplin, GhostService ghost, BlogConfig blogConfig, List<Tag> tags)
+        private async Task<int> ProcessSingleBlog(JoplinService joplin, GhostService ghost, BlogConfig blogConfig, List<Tag> allTags)
         {
             Log.Debug("Processing blog {blogUrl}", blogConfig.BlogUrl);
             var now = DateTime.UtcNow;
@@ -133,9 +134,9 @@ namespace Ghoplin
                     var noteId = await joplin.CreateNote(blogConfig.NotebookId, note);
                     Log.Debug("Created note with ID {noteId}", noteId);
                     newPosts++;
-                    await Task.Delay(900);
+                    await Task.Delay(1900);
 
-                    await AddNoteTags(joplin, blogConfig, tags, note);
+                    await AddNoteTags(joplin, blogConfig, allTags, note);
                     blogConfig.LastFetch = now;
                 }
                 catch (Exception ex)
