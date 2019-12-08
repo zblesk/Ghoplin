@@ -1,5 +1,4 @@
 ﻿using Flurl.Http;
-using Polly;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -27,7 +26,7 @@ namespace Ghoplin
         {
             Log.Debug("Starting Sync");
             var config = await LoadConfig();
-            var tags = await _joplin.LoadTags(); 
+            var tags = await _joplin.LoadTags();
             var totalNewNotes = 0;
             foreach (var blog in config.Blogs.Where(blog => !blog.Disabled))
             {
@@ -41,7 +40,7 @@ namespace Ghoplin
                 }
             }
             Log.Debug("Done. Added {newNotes} new notes.", totalNewNotes);
-       //     await _joplin.UpdateConfigNote(config);
+            //     await _joplin.UpdateConfigNote(config);
         }
 
         public async Task AddBlog(string apiKey, string blogUrl, string notebookId, params string[] autoTags)

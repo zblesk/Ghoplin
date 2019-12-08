@@ -1,29 +1,21 @@
 ﻿using Serilog;
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.IO;
 using Terminal.Gui;
 
 namespace Ghoplin
 {
-    class Program
+    static class Program
     {
         static void Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .WriteTo.Console()
-                .CreateLogger();
-            
-            var joplinConfig = File.ReadAllText(".ghoplin").Split();
-            var token = joplinConfig[0];
-            var port = joplinConfig.Length > 1 ? int.Parse(joplinConfig[1]) : 41184;
-            var ghoplin = new GhoplinApi(
-                $"http://localhost:{port}/",
-                token);
-            ghoplin.Sync()
-                .Wait();
-            //Gui();
+
+            var command = CliCommands.CreateCli();
+            command.InvokeAsync(args).Wait();
+
         }
 
         private static void Gui()

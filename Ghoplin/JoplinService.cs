@@ -2,6 +2,7 @@
 using Flurl.Http;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -110,6 +111,8 @@ namespace Ghoplin
 
         public async Task<string> CreateNote(string notebookId, Note note)
         {
+            try
+            { 
             var response = await _apiUrl
                 .AppendPathSegment("notes")
                 .SetQueryParam("token", _token)
@@ -126,6 +129,13 @@ namespace Ghoplin
                 .ReceiveJson().ConfigureAwait(false);
             note.Id = response.id.ToString() as string;
             return note.Id;
+
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "silenced failure");
+            }
+            return "";
         }
 
         public async Task<Tag> CreateTag(string tag)
@@ -147,14 +157,21 @@ namespace Ghoplin
 
         public async Task AssignTag(Tag tag, Note note)
         {
-            await _apiUrl
-                .AppendPathSegments("tags", tag.Id, "notes")
-                .SetQueryParam("token", _token)
-                .PostJsonAsync(new
-                {
-                    id = note.Id
-                })
-                .ConfigureAwait(false);
+            try
+            {
+                await _apiUrl
+                    .AppendPathSegments("tags", tag.Id, "notes")
+                    .SetQueryParam("token", _token)
+                    .PostJsonAsync(new
+                    {
+                        id = note.Id
+                    })
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "silenced failure");
+            }
         }
 
         public async Task<Notebook> GetNotebookById(string id)
