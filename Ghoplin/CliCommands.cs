@@ -39,10 +39,10 @@ namespace Ghoplin
         {
             Command addCommand = new Command("add", "Adds a new blog to be synchronized")
                     {
-                        new Option("--url", "URL of the Ghost blog's API") { Argument = new Argument<string>() },
-                        new Option("--apiKey", "API key of the Ghost blog (get it in the blog's settings)") { Argument = new Argument<string>() },
-                        new Option("--notebook", "The ID or name of the Joplin's notebook this blog will sync to") { Argument = new Argument<string>() },
-                        new Option("--autoTags", "A comma-separated list of tags that will be applied to every synced note in Joplin") { Argument = new Argument<string>(() => "") },
+                        new Option(new[] {"--url", "-u" }, "URL of the Ghost blog's API") { Argument = new Argument<string>() },
+                        new Option(new[] {"--apiKey", "-k" }, "API key of the Ghost blog (get it in the blog's settings)") { Argument = new Argument<string>() },
+                        new Option(new[] {"--notebook", "-n" }, "The ID or name of the Joplin's notebook this blog will sync to") { Argument = new Argument<string>() },
+                        new Option(new[] {"--autoTags" }, "A comma-separated list of tags that will be applied to every synced note in Joplin") { Argument = new Argument<string>(() => "") },
                         VerbosityOption,
                         JoplinPortOption,
                         JoplinTokenOption,
@@ -82,7 +82,7 @@ namespace Ghoplin
             if (string.IsNullOrWhiteSpace(token))
             {
                 // not provided via a parameter - check the setting file
-                Log.Verbose("token not provided as a parameter. Loading token and port from file.");
+                Log.Verbose("Token not provided as a parameter. Loading token and port from file.");
                 var joplinConfigFile = File.ReadAllText(".ghoplin").Split();
                 token = joplinConfigFile[0];
                 port = joplinConfigFile.Length > 1 ? int.Parse(joplinConfigFile[1]) : DefaultPort;

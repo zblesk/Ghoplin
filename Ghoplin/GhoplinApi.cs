@@ -40,7 +40,7 @@ namespace Ghoplin
                 }
             }
             Log.Debug("Done. Added {newNotes} new notes.", totalNewNotes);
-            //     await _joplin.UpdateConfigNote(config);
+            await _joplin.UpdateConfigNote(config);
         }
 
         public async Task AddBlog(string apiKey, string blogUrl, string notebookId, params string[] autoTags)

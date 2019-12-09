@@ -2,7 +2,7 @@
   "profiles": {
     "Ghoplin": {
       "commandName": "Project",
-      "commandLineArgs": "add --url urlTu --apiKey tokenTu --notebook \"blog 4\" --autoTags \"test1,,,test23\""
+      "commandLineArgs": "sync"
     }
   }
 }

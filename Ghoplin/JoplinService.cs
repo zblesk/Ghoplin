@@ -2,6 +2,7 @@
 using Flurl.Http;
 using Microsoft.CSharp.RuntimeBinder;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,10 @@ namespace Ghoplin
         private const string ConfigNoteId = "00000000000031337000000000000001";
         private readonly string _apiUrl;
         private readonly string _token;
+        private static ILogger l = new LoggerConfiguration()
+                            .MinimumLevel.Verbose()
+                            .WriteTo.File("chibi.log")
+                            .CreateLogger();
 
         public JoplinService(string apiUrl, string token)
         {
@@ -59,6 +64,10 @@ namespace Ghoplin
                 .SetQueryParam("token", _token)
                 .SetQueryParam("fields", "body")
                 .GetJsonAsync().ConfigureAwait(false);
+            if (configNote == null)
+            {
+                return null;
+            }
             return JsonConvert.DeserializeObject<GhoplinConfig>(configNote.body);
         }
 
@@ -133,7 +142,25 @@ namespace Ghoplin
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "silenced failure");
+                Log.Error("Note creation failed");
+                l.Error(ex, "Note creation failed");
+                l.Error(ex?.InnerException, "Note creation failed inner");
+                var found = await _apiUrl
+                    .AppendPathSegments("folders", notebookId, "notes")
+                    .SetQueryParams(new
+                    {
+                        token = _token,
+                        fields = "source_url,id"
+                    })
+                    .GetStringAsync();
+                var a = (JArray)JsonConvert.DeserializeObject(found);
+                var first = a.FirstOrDefault(i => i["source_url"].ToString() == note.Url);
+                if (first != null)
+                {
+                    note.Id = first["id"].ToString();
+                    Log.Warning("Found ID anyway: {id}", note.Id);
+                    return note.Id; 
+                }
             }
             return "";
         }
@@ -170,7 +197,9 @@ namespace Ghoplin
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "silenced failure");
+                Log.Error("tag add failed");
+                l.Error(ex, "tag add failed");
+                l.Error(ex?.InnerException, "tag add failed inner");
             }
         }
 
