@@ -28,11 +28,11 @@ jobs:
         name: Ghoplin.exe
         path: Ghoplin/bin/ReleaseComplete/netcoreapp3.1/win-x64/publish/Ghoplin.exe
     - name: Make Release
-      uses: fnkr/github-action-ghr@v1
-      env:
-        GHR_COMPRESS: zip
-        GHR_PATH: |
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
           Ghoplin/bin/ReleaseComplete/netcoreapp3.1/linux-x64/publish/Ghoplin
           Ghoplin/bin/ReleaseComplete/netcoreapp3.1/win-x64/publish/Ghoplin.exe
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
