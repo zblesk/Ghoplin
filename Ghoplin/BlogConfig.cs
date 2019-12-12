@@ -1,8 +1,5 @@
-﻿using Serilog;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ghoplin
 {
@@ -16,6 +13,6 @@ namespace Ghoplin
         public string LastFetchedPost { get; set; }
         public string NotebookId { get; set; }
         public int NotesTotal { get; set; }
-        public bool Disabled { get; set; } 
+        public bool Disabled { get; set; }
     }
 }

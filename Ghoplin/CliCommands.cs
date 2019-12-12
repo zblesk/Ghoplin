@@ -71,9 +71,9 @@ namespace Ghoplin
 
         private static GhoplinApi ProgramSetup(bool verbose, int port, string token)
         {
-//#if DEBUG
-//            verbose = true;
-//#endif
+            //#if DEBUG
+            //            verbose = true;
+            //#endif
             Log.Logger = new LoggerConfiguration()
                             .MinimumLevel.Is(verbose ? LogEventLevel.Verbose : LogEventLevel.Warning)
                             .WriteTo.Console()

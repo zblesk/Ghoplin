@@ -135,9 +135,9 @@ namespace Ghoplin
                 {
                     Log.Information("Adding note {noteName}", note.Title);
                     var noteId = await joplin.CreateNote(blogConfig.NotebookId, note);
+                    await Task.Delay(1900);
                     Log.Debug("Created note with ID {noteId}", noteId);
                     newPosts++;
-                    await Task.Delay(1900);
 
                     await AddNoteTags(joplin, blogConfig, allTags, note);
 

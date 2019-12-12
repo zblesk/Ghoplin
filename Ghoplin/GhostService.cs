@@ -1,15 +1,11 @@
 ﻿using Flurl;
 using Flurl.Http;
-using Newtonsoft.Json;
-using Serilog;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Ghoplin
 {
-
     public class GhostService
     {
         public async Task<IList<Note>> LoadBlogPostsSince(string blogUrl, string apiKey, DateTime since)

@@ -10,7 +10,7 @@ namespace Ghoplin
         public string Title { get; set; }
         public string ParentId { get; set; }
         public long NoteCount { get; set; }
-        
+
         public Notebook Parent { get; set; }
 
         public IEnumerable<Notebook> Children { get; set; } = Enumerable.Empty<Notebook>();

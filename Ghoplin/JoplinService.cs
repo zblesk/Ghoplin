@@ -83,35 +83,7 @@ namespace Ghoplin
                 .SetQueryParam("token", _token)
                 .GetJsonListAsync().ConfigureAwait(false);
 
-            return new NotebookList(notebookList.Select(nb => (Notebook)CreateNotebook(nb)).ToList());
-        }
-
-        private Notebook CreateNotebook(dynamic notebookData, Notebook parent = null)
-        {
-            var notebook = new Notebook
-            {
-                Id = notebookData.id,
-                Title = notebookData.title,
-                NoteCount = notebookData.note_count,
-                ParentId = notebookData.parent_id,
-                Parent = parent,
-                Children = Enumerable.Empty<Notebook>(),
-            };
-            Debug.Assert(string.IsNullOrWhiteSpace(notebook.ParentId) || notebook.ParentId == notebook.Parent.Id);
-            try
-            {
-                var children = new List<Notebook>();
-                foreach (var child in notebookData.children)
-                {
-                    children.Add(CreateNotebook(child, notebook));
-                }
-                notebook.Children = children;
-            }
-            catch (RuntimeBinderException ex) when (ex.Message == "'System.Dynamic.ExpandoObject' does not contain a definition for 'children'")
-            {
-                // No children. Do nothing.
-            }
-            return notebook;
+            return new NotebookList(notebookList.Select(nb => (Notebook)BuildNotebookFromResponse(nb)).ToList());
         }
 
         public async Task<string> CreateNote(string notebookId, Note note)
@@ -156,7 +128,7 @@ namespace Ghoplin
                     return note.Id;
                 }
             }
-            throw new GhoplinException($"Note creation failed for {note.Title}");
+            throw new GhoplinException($"Note creation failed for '{note.Title}'");
         }
 
         public async Task<Tag> CreateTag(string tag)
@@ -191,7 +163,7 @@ namespace Ghoplin
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Tag add failed ({tag} to {noteTitle} - {noteId}", tag.Title, note.Title, note.Id);
+                Log.Error(ex, "Tag add failed ('{tag}' to '{noteTitle}' - {noteId}", tag.Title, note.Title, note.Id);
             }
         }
 
@@ -202,6 +174,34 @@ namespace Ghoplin
                 .SetQueryParam("token", _token)
                 .GetStringAsync().ConfigureAwait(false);
             return JsonConvert.DeserializeObject<Notebook>(notebookResponse);
+        }
+
+        private Notebook BuildNotebookFromResponse(dynamic notebookData, Notebook parent = null)
+        {
+            var notebook = new Notebook
+            {
+                Id = notebookData.id,
+                Title = notebookData.title,
+                NoteCount = notebookData.note_count,
+                ParentId = notebookData.parent_id,
+                Parent = parent,
+                Children = Enumerable.Empty<Notebook>(),
+            };
+            Debug.Assert(string.IsNullOrWhiteSpace(notebook.ParentId) || notebook.ParentId == notebook.Parent.Id);
+            try
+            {
+                var children = new List<Notebook>();
+                foreach (var child in notebookData.children)
+                {
+                    children.Add(BuildNotebookFromResponse(child, notebook));
+                }
+                notebook.Children = children;
+            }
+            catch (RuntimeBinderException ex) when (ex.Message == "'System.Dynamic.ExpandoObject' does not contain a definition for 'children'")
+            {
+                // No children. Do nothing.
+            }
+            return notebook;
         }
     }
 }
