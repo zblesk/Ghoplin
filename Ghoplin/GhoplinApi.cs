@@ -142,7 +142,7 @@ namespace Ghoplin
                     await AddNoteTags(joplin, blogConfig, allTags, note);
 
                     blogConfig.LastFetch = note.Timestamp ?? now;
-                    blogConfig.LastFetchedPost = note.Title;
+                    blogConfig.LastFetchedPost = $"[{note.Title}](:/{note.Id})";
                 }
                 catch (Exception ex)
                 {
