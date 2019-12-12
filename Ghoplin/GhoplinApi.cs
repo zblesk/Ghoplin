@@ -65,7 +65,7 @@ namespace Ghoplin
             Log.Debug("Found notebook '{notebookTitle}' ({notebookId})", notebook.Title, notebook.Id);
             Log.Debug("Attempting to contact blog");
             var title = await _ghost.LoadBlogTitle(blogUrl, apiKey);
-            Log.Information("Successfully connected to blog {blogTitle} at {blogUrl}", blogUrl, title);
+            Log.Information("Successfully connected to blog {blogTitle} at {blogUrl}", title, blogUrl);
 
             var newBlog = new BlogConfig
             {
@@ -79,7 +79,7 @@ namespace Ghoplin
             };
             config.Blogs.Add(newBlog);
 
-            Log.Information("Successfully added blog {blogUrl}", blogUrl);
+            Log.Information("Successfully added blog {blogUrl}", title);
             await _joplin.UpdateConfigNote(config);
             Log.Debug("Updated config in Joplin");
         }
@@ -151,6 +151,7 @@ namespace Ghoplin
                 }
             }
             blogConfig.LastFetch = now;
+            blogConfig.NotesTotal += newPosts;
             return newPosts;
         }
     }
