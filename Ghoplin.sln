@@ -3,18 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ghoplin", "Ghoplin\Ghoplin.csproj", "{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ghoplin", "Ghoplin\Ghoplin.csproj", "{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
+		ReleaseComplete|Any CPU = ReleaseComplete|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}.ReleaseComplete|Any CPU.ActiveCfg = ReleaseComplete|Any CPU
+		{2FF3B8EB-152E-47BF-8F0A-12C05BACF747}.ReleaseComplete|Any CPU.Build.0 = ReleaseComplete|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
