@@ -17,10 +17,15 @@ jobs:
       run: dotnet publish -r linux-x64 --configuration ReleaseComplete
     - name: Build for Windows
       run: dotnet publish -r win-x64 --configuration ReleaseComplete
-    - name: Upload artifact
+    - name: Upload artifact - Linux
       uses: actions/upload-artifact@v1.0.0
       with:
         name: Ghoplin
-        path: Ghoplin
+        path: Ghoplin/bin/ReleaseComplete/netcoreapp3.1/linux-x64/publish/Ghoplin
+    - name: Upload artifact - Windows
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: Ghoplin.exe
+        path: Ghoplin/bin/ReleaseComplete/netcoreapp3.1/win-x64/publish/Ghoplin.exe
 
     
