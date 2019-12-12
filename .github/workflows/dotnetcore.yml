@@ -13,7 +13,9 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.100
-    - name: Build with dotnet
+    - name: Build for Linux
       run: dotnet publish -r linux-x64 --configuration ReleaseComplete
+    - name: Build for Windows
+      run: dotnet publish -r win-x64 --configuration ReleaseComplete
     
     
