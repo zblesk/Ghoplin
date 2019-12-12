@@ -63,6 +63,9 @@ namespace Ghoplin
             var notebook = await GetNotebookByIdOrTitle(notebookId);
 
             Log.Debug("Found notebook '{notebookTitle}' ({notebookId})", notebook.Title, notebook.Id);
+            Log.Debug("Attempting to contact blog");
+            var title = await _ghost.LoadBlogTitle(blogUrl, apiKey);
+            Log.Information("Successfully connected to blog {blogTitle} at {blogUrl}", blogUrl, title);
 
             var newBlog = new BlogConfig
             {
@@ -71,7 +74,8 @@ namespace Ghoplin
                 NotebookId = notebook.Id,
                 AutoTags = autoTags == null
                     ? new List<string>()
-                    : autoTags.ToList()
+                    : autoTags.ToList(),
+                Title = title,
             };
             config.Blogs.Add(newBlog);
 
@@ -122,7 +126,7 @@ namespace Ghoplin
 
         private async Task<int> ProcessSingleBlog(JoplinService joplin, GhostService ghost, BlogConfig blogConfig, List<Tag> allTags)
         {
-            Log.Debug("Processing blog {blogUrl}", blogConfig.BlogUrl);
+            Log.Information("Processing blog {blogTitle} @ {blogUrl}", blogConfig.Title, blogConfig.BlogUrl);
             var now = DateTime.UtcNow;
             int newPosts = 0;
             foreach (var note in await ghost.LoadBlogPostsSince(blogConfig.BlogUrl, blogConfig.ApiKey, blogConfig.LastFetch))
@@ -136,14 +140,17 @@ namespace Ghoplin
                     await Task.Delay(1900);
 
                     await AddNoteTags(joplin, blogConfig, allTags, note);
-                    blogConfig.LastFetch = now;
+
+                    blogConfig.LastFetch = note.Timestamp ?? now;
+                    blogConfig.LastFetchedPost = note.Title;
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Error while doing {name}", note.Title);
-                    throw;
+                    Log.Error(ex, "Error while processing note {noteTitle}", note.Title);
+                    continue;
                 }
             }
+            blogConfig.LastFetch = now;
             return newPosts;
         }
     }

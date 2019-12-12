@@ -17,10 +17,6 @@ namespace Ghoplin
         private const string ConfigNoteId = "00000000000031337000000000000001";
         private readonly string _apiUrl;
         private readonly string _token;
-        private static ILogger l = new LoggerConfiguration()
-                            .MinimumLevel.Verbose()
-                            .WriteTo.File("chibi.log")
-                            .CreateLogger();
 
         public JoplinService(string apiUrl, string token)
         {
@@ -86,7 +82,7 @@ namespace Ghoplin
                 .AppendPathSegments("folders")
                 .SetQueryParam("token", _token)
                 .GetJsonListAsync().ConfigureAwait(false);
-       
+
             return new NotebookList(notebookList.Select(nb => (Notebook)CreateNotebook(nb)).ToList());
         }
 
@@ -121,30 +117,28 @@ namespace Ghoplin
         public async Task<string> CreateNote(string notebookId, Note note)
         {
             try
-            { 
-            var response = await _apiUrl
-                .AppendPathSegment("notes")
-                .SetQueryParam("token", _token)
-                .PostJsonAsync(new
-                {
-                    parent_id = notebookId,
-                    title = note.Title,
-                    body_html = note.Content,
-                    source_url = note.Url,
-                    base_url = new Uri(note.Url).GetLeftPart(UriPartial.Path),
-                    user_created_time = note.Timestamp?.ToUnixTimestampMiliseconds().ToString(),
-                    user_updated_time = note.Timestamp?.ToUnixTimestampMiliseconds().ToString(),
-                })
-                .ReceiveJson().ConfigureAwait(false);
-            note.Id = response.id.ToString() as string;
-            return note.Id;
-
-            }
-            catch (Exception ex)
             {
-                Log.Error("Note creation failed");
-                l.Error(ex, "Note creation failed");
-                l.Error(ex?.InnerException, "Note creation failed inner");
+                var response = await _apiUrl
+                    .AppendPathSegment("notes")
+                    .SetQueryParam("token", _token)
+                    .PostJsonAsync(new
+                    {
+                        parent_id = notebookId,
+                        title = note.Title,
+                        body_html = note.Content,
+                        source_url = note.Url,
+                        base_url = new Uri(note.Url).GetLeftPart(UriPartial.Path),
+                        user_created_time = note.Timestamp?.ToUnixTimestampMiliseconds().ToString(),
+                        user_updated_time = note.Timestamp?.ToUnixTimestampMiliseconds().ToString(),
+                    })
+                    .ReceiveJson().ConfigureAwait(false);
+                note.Id = response.id.ToString() as string;
+                return note.Id;
+            }
+            catch (FlurlHttpException)
+            {
+                Log.Information("Note creation failed, trying a fetch");
+                await Task.Delay(1500);
                 var found = await _apiUrl
                     .AppendPathSegments("folders", notebookId, "notes")
                     .SetQueryParams(new
@@ -158,11 +152,11 @@ namespace Ghoplin
                 if (first != null)
                 {
                     note.Id = first["id"].ToString();
-                    Log.Warning("Found ID anyway: {id}", note.Id);
-                    return note.Id; 
+                    Log.Information("Found ID anyway: {id}", note.Id);
+                    return note.Id;
                 }
             }
-            return "";
+            throw new GhoplinException($"Note creation failed for {note.Title}");
         }
 
         public async Task<Tag> CreateTag(string tag)
@@ -197,9 +191,7 @@ namespace Ghoplin
             }
             catch (Exception ex)
             {
-                Log.Error("tag add failed");
-                l.Error(ex, "tag add failed");
-                l.Error(ex?.InnerException, "tag add failed inner");
+                Log.Error(ex, "Tag add failed ({tag} to {noteTitle} - {noteId}", tag.Title, note.Title, note.Id);
             }
         }
 

@@ -28,6 +28,7 @@ namespace Ghoplin
                     limit = "all",
                     key = apiKey,
                     filter = $"updated_at:>='{since.ToString("s")}'",
+                    order = "published_at asc",
                 });
             var response = await url
                 .GetAsync()
@@ -52,6 +53,25 @@ namespace Ghoplin
                 note.Tags = tags;
             }
             return results;
+        }
+
+        public async Task<string> LoadBlogTitle(string blogUrl, string apiKey)
+        {
+            if (string.IsNullOrWhiteSpace(blogUrl)
+                || string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new ArgumentException("Blog URL and API Key must be set.");
+            }
+            var settings = await blogUrl
+                .AppendPathSegment("ghost/api/v2/content/settings/")
+                .SetQueryParams(
+                new
+                {
+                    key = apiKey,
+                })
+                .GetJsonAsync()
+                .ConfigureAwait(false);
+            return settings.settings.title.ToString() as string;
         }
     }
 }

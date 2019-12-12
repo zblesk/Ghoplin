@@ -71,18 +71,24 @@ namespace Ghoplin
 
         private static GhoplinApi ProgramSetup(bool verbose, int port, string token)
         {
-#if DEBUG
-            verbose = true;
-#endif
+//#if DEBUG
+//            verbose = true;
+//#endif
             Log.Logger = new LoggerConfiguration()
                             .MinimumLevel.Is(verbose ? LogEventLevel.Verbose : LogEventLevel.Warning)
                             .WriteTo.Console()
+                            .WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Error)
                             .CreateLogger();
 
             if (string.IsNullOrWhiteSpace(token))
             {
                 // not provided via a parameter - check the setting file
-                Log.Verbose("Token not provided as a parameter. Loading token and port from file.");
+                Log.Verbose("Token not provided as a parameter. Trying to load token and port from file.");
+                if (!File.Exists(".ghoplin"))
+                {
+                    Log.Fatal("You must provide a valid Joplin API token - via a parameter or a .ghoplin file.");
+                    Environment.Exit(1);
+                }
                 var joplinConfigFile = File.ReadAllText(".ghoplin").Split();
                 token = joplinConfigFile[0];
                 port = joplinConfigFile.Length > 1 ? int.Parse(joplinConfigFile[1]) : DefaultPort;
@@ -90,7 +96,8 @@ namespace Ghoplin
 
             if (string.IsNullOrWhiteSpace(token))
             {
-                throw new GhoplinException("You must provide a valid Joplin API token");
+                Log.Fatal("You must provide a valid Joplin API token - via a parameter or a .ghoplin file.");
+                Environment.Exit(1);
             }
 
             var ghoplin = new GhoplinApi(
