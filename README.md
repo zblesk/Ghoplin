@@ -3,7 +3,7 @@ A tool for downloading posts from [Ghost](https://ghost.org/) blogs into the [Jo
 
 ## Why? 
 
-Joplin keeps my notes. Many of my blog posts are just neater summaries of my notes or the things I've learned. When I search Joplin, I want all of my blog posts to be included in the search as well. Post URLs and tags are transferred as well.
+Joplin keeps my notes. Many of my blog posts are just neater summaries of my notes or the things I've learned. When I search Joplin, I want all of my blog posts to be included in the search as well. **The downloaded notes contain original post URLs, tags and the Created and Modified timestamps are set to the date of post publication**.  
 
 ## How? 
 
@@ -27,7 +27,7 @@ First you have to let Ghoplin talk to your Joplin, which has to be running when 
 
 > If you don't have the token yet: In Joplin, go to Tools -> Options -> Web Clipper. Enable it, if it isn't enabled yet. Then copy the *Authorisation token* in the Advanced options section.
 
-**You can either input your token **(and port, if non-default) **every time you run Ghoplin by passing it in a parameter**, i.e. appending `-t thisIsMyToken546168135413243` to each command. 
+**You can either input your token** (and port, if non-default) **every time you run Ghoplin by passing it in a parameter**, i.e. appending `-t thisIsMyToken546168135413243` to each command. 
 
 **Or you can save your token into a config file that will be placed next to the executable.** The easiest way to write this file is by running:
 
@@ -39,7 +39,7 @@ Then you no longer need to specify the token when running subsequent commands.
 
 ### 2. Add your blogs
 
-Then you have to add your blogs. For each, run `add` like so: 
+For each blog you want to add, run `add`: 
 
 ```
 Ghoplin add --url https://zblesk.net/blog --apiKey myActualApiKeyReally235476854 --notebook "English blog"
@@ -118,7 +118,7 @@ No.
 
 No. 
 
-**Update notes already synced?** 
+**Update notes already synced once?** 
 
 No.
 
