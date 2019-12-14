@@ -29,6 +29,7 @@ jobs:
         path: Ghoplin/bin/ReleaseComplete/netcoreapp3.1/win-x64/publish/Ghoplin.exe
     - name: Make Release
       uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with:
         files: |
           Ghoplin/bin/ReleaseComplete/netcoreapp3.1/linux-x64/publish/Ghoplin
