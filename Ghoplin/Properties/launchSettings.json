@@ -2,7 +2,7 @@
   "profiles": {
     "Ghoplin": {
       "commandName": "Project",
-      "commandLineArgs": "sync -t d96248fb2b68b5cc6fd58114846d9809a725d88899295219d454f0d738ff81e173c9df563382ec73cb1456df63dabd3fc657c1deedbcc80673e24f1e1a871d96 -v"
+      "commandLineArgs": "add --url https://zblesk.net/blog --apiKey 31e2772af926adf481ef00546a --notebook \"blog 1\""
     }
   }
 }

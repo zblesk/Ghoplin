@@ -39,7 +39,7 @@ namespace Ghoplin
                     Log.Error(ex, "An error while updating {blogUrl}", blog.BlogUrl);
                 }
             }
-            Log.Debug("Done. Added {newNotes} new notes.", totalNewNotes);
+            Log.Information("Done. Added {newNotes} new notes.", totalNewNotes);
             await _joplin.UpdateConfigNote(config);
         }
 

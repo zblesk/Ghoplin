@@ -109,7 +109,7 @@ namespace Ghoplin
             }
             catch (FlurlHttpException)
             {
-                Log.Information("Note creation failed, trying a fetch");
+                Log.Debug("Note creation failed, trying a fetch");
                 await Task.Delay(1500);
                 var found = await _apiUrl
                     .AppendPathSegments("folders", notebookId, "notes")
@@ -124,7 +124,7 @@ namespace Ghoplin
                 if (first != null)
                 {
                     note.Id = first["id"].ToString();
-                    Log.Information("Found ID anyway: {id}", note.Id);
+                    Log.Debug("Found ID anyway: {id}", note.Id);
                     return note.Id;
                 }
             }

@@ -4,6 +4,7 @@ using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Text;
 
 namespace Ghoplin
 {
@@ -20,7 +21,20 @@ namespace Ghoplin
             {
                 CreateAddCommand(),
                 CreateSyncCommand(),
+                CreateConfigCommand(),
             };
+        }
+
+        private static Symbol CreateConfigCommand()
+        {
+            var configCommand = new Command("write-config", "Write your Joplin token and port to a .ghoplin file (so you don't have to enter them on each call)")
+            {
+                VerbosityOption,
+                JoplinPortOption,
+                JoplinTokenOption,
+            };
+            configCommand.Handler = CommandHandler.Create<bool, int, string>(DoConfig);
+            return configCommand;
         }
 
         private static Symbol CreateSyncCommand()
@@ -42,7 +56,7 @@ namespace Ghoplin
                         new Option(new[] {"--url", "-u" }, "URL of the Ghost blog's API") { Argument = new Argument<string>() },
                         new Option(new[] {"--apiKey", "-k" }, "API key of the Ghost blog (get it in the blog's settings)") { Argument = new Argument<string>() },
                         new Option(new[] {"--notebook", "-n" }, "The ID or name of the Joplin's notebook this blog will sync to") { Argument = new Argument<string>() },
-                        new Option(new[] {"--autoTags" }, "A comma-separated list of tags that will be applied to every synced note in Joplin") { Argument = new Argument<string>(() => "") },
+                        new Option(new[] {"--auto-tags" }, "A comma-separated list of tags that will be applied to every synced note in Joplin") { Argument = new Argument<string>(() => "") },
                         VerbosityOption,
                         JoplinPortOption,
                         JoplinTokenOption,
@@ -69,16 +83,32 @@ namespace Ghoplin
                 .Wait();
         }
 
+        private static void DoConfig(bool verbose, int port, string token)
+        {
+            SetupLogger(verbose);
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                Log.Fatal("You must provide a valid Joplin API token to be written into the config file.");
+                Environment.Exit(1);
+            }
+            if (File.Exists(".ghoplin"))
+            {
+                Log.Warning("The existing .ghoplin file will be overwritten.");
+                File.Delete(".ghoplin");
+            }
+            var config = new StringBuilder(token);
+            if (port != DefaultPort)
+            {
+                config.AppendLine();
+                config.Append(port);
+            }
+            File.WriteAllTextAsync(".ghoplin", config.ToString());
+            Log.Information("Config written to .ghoplin");
+        }
+
         private static GhoplinApi ProgramSetup(bool verbose, int port, string token)
         {
-            //#if DEBUG
-            //            verbose = true;
-            //#endif
-            Log.Logger = new LoggerConfiguration()
-                            .MinimumLevel.Is(verbose ? LogEventLevel.Verbose : LogEventLevel.Warning)
-                            .WriteTo.Console()
-                            .WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Error)
-                            .CreateLogger();
+            SetupLogger(verbose);
 
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -89,7 +119,7 @@ namespace Ghoplin
                     Log.Fatal("You must provide a valid Joplin API token - via a parameter or a .ghoplin file.");
                     Environment.Exit(1);
                 }
-                var joplinConfigFile = File.ReadAllText(".ghoplin").Split();
+                var joplinConfigFile = File.ReadAllText(".ghoplin").Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
                 token = joplinConfigFile[0];
                 port = joplinConfigFile.Length > 1 ? int.Parse(joplinConfigFile[1]) : DefaultPort;
             }
@@ -104,6 +134,18 @@ namespace Ghoplin
                 $"http://localhost:{port}/",
                 token);
             return ghoplin;
+        }
+
+        private static void SetupLogger(bool verbose)
+        {
+            //#if DEBUG
+            //            verbose = true;
+            //#endif
+            Log.Logger = new LoggerConfiguration()
+                            .MinimumLevel.Is(verbose ? LogEventLevel.Verbose : LogEventLevel.Information)
+                            .WriteTo.Console()
+                            .WriteTo.File("log-.txt", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: LogEventLevel.Error)
+                            .CreateLogger();
         }
     }
 }
