@@ -1,8 +1,7 @@
 {
   "profiles": {
     "Ghoplin": {
-      "commandName": "Project",
-      "commandLineArgs": "add --url https://zblesk.net/blog --apiKey 31e2772af926adf481ef00546a --notebook \"blog 1\""
+      "commandName": "Project"
     }
   }
 }

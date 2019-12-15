@@ -17,7 +17,7 @@ Tested on Windows and Linux (Ubuntu on WSL, to be precise). Since it's written i
 
 ## Usage - quickstart
 
-Download the appropriate file from the Releases page. The commands below are same regardless of platform, the only difference is that e.g. in Powershell on Windows the invocation will look like `.\Ghoplin.exe <command>`, whereas in Fish on Ubuntu it'll be `./Ghoplin <command>`. 
+Download the appropriate file from the [Releases](https://github.com/zblesk/Ghoplin/releases) page. The commands below are same regardless of platform, the only difference is that e.g. in Powershell on Windows the invocation will look like `.\Ghoplin.exe <command>`, whereas in Fish on Ubuntu it'll be `./Ghoplin <command>`. 
 
 To get help for any command, try something like `Ghoplin help`, `Ghoplin add help` etc.
 
