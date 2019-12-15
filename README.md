@@ -1,6 +1,8 @@
 # Ghoplin
 A tool for downloading posts from [Ghost](https://ghost.org/) blogs into the [Joplin](https://joplinapp.org/) note-taking app.
 
+![ghoplin-wide](ghoplin-wide.png)
+
 ## Why? 
 
 Joplin keeps my notes. Many of my blog posts are just neater summaries of my notes or the things I've learned. When I search Joplin, I want all of my blog posts to be included in the search as well. **The downloaded notes contain original post URLs, tags and the Created and Modified timestamps are set to the date of post publication**.  
