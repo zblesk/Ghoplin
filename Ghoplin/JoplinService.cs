@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Ghoplin
 {
-    internal class JoplinService
+    public class JoplinService
     {
         private const string ConfigNoteId = "00000000000031337000000000000001";
         private readonly string _apiUrl;
@@ -88,6 +88,11 @@ namespace Ghoplin
 
         public async Task<string> CreateNote(string notebookId, Note note)
         {
+            var url = "";
+            if (!string.IsNullOrWhiteSpace(note.Url))
+            {
+                url = new Uri(note.Url).GetLeftPart(UriPartial.Path);
+            }
             try
             {
                 var response = await _apiUrl
@@ -98,8 +103,9 @@ namespace Ghoplin
                         parent_id = notebookId,
                         title = note.Title,
                         body_html = note.Content,
-                        source_url = note.Url,
-                        base_url = new Uri(note.Url).GetLeftPart(UriPartial.Path),
+                        
+                        source_url = note.Url ?? "",
+                        base_url = url,
                         user_created_time = note.Timestamp?.ToUnixTimestampMiliseconds().ToString(),
                         user_updated_time = note.Timestamp?.ToUnixTimestampMiliseconds().ToString(),
                     })
