@@ -1,9 +1,12 @@
-﻿using Serilog;
+﻿using Newtonsoft.Json;
+using Serilog;
 using Serilog.Events;
 using System;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Ghoplin
@@ -14,9 +17,14 @@ namespace Ghoplin
         private static readonly Option JoplinPortOption = new Option(new[] { "--port", "-p" }, "Joplin's port (found on Web Clipper's settings page)") { Argument = new Argument<int>(() => DefaultPort) };
         private static readonly Option JoplinTokenOption = new Option(new[] { "--token", "-t" }, "Joplin's token (found on Web Clipper's settings page)") { Argument = new Argument<string>(() => "") };
         private const int DefaultPort = 41184;
+        private const string ConfigFileName = ".ghoplin";
+        private static string ConfigPath = ConfigFileName;
 
         public static RootCommand CreateCli()
         {
+            ConfigPath = Path.Join(
+                Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName),
+                ConfigFileName);
             return new RootCommand("Ghoplin - a tool for syncing Ghost blog posts into Joplin")
             {
                 CreateAddCommand(),
@@ -91,10 +99,10 @@ namespace Ghoplin
                 Log.Fatal("You must provide a valid Joplin API token to be written into the config file.");
                 Environment.Exit(1);
             }
-            if (File.Exists(".ghoplin"))
+            if (File.Exists(ConfigPath))
             {
                 Log.Warning("The existing .ghoplin file will be overwritten.");
-                File.Delete(".ghoplin");
+                File.Delete(ConfigPath);
             }
             var config = new StringBuilder(token);
             if (port != DefaultPort)
@@ -102,7 +110,7 @@ namespace Ghoplin
                 config.AppendLine();
                 config.Append(port);
             }
-            File.WriteAllTextAsync(".ghoplin", config.ToString());
+            File.WriteAllTextAsync(ConfigPath, config.ToString());
             Log.Information("Config written to .ghoplin");
         }
 
@@ -113,13 +121,14 @@ namespace Ghoplin
             if (string.IsNullOrWhiteSpace(token))
             {
                 // not provided via a parameter - check the setting file
-                Log.Verbose("Token not provided as a parameter. Trying to load token and port from file.");
-                if (!File.Exists(".ghoplin"))
+
+                Log.Verbose("Token not provided as a parameter. Trying to load token and port from file {path}", ConfigPath);
+                if (!File.Exists(ConfigPath))
                 {
                     Log.Fatal("You must provide a valid Joplin API token - via a parameter or a .ghoplin file.");
                     Environment.Exit(1);
                 }
-                var joplinConfigFile = File.ReadAllText(".ghoplin").Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+                var joplinConfigFile = File.ReadAllText(ConfigPath).Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
                 token = joplinConfigFile[0];
                 port = joplinConfigFile.Length > 1 ? int.Parse(joplinConfigFile[1]) : DefaultPort;
             }
