@@ -53,7 +53,7 @@ namespace Ghoplin
                 .ReceiveJson().ConfigureAwait(false);
         }
 
-        public async Task<GhoplinConfig> GetConfigNote()
+        public async Task<GhoplinConfig?> GetConfigNote()
         {
             var configNote1 = _apiUrl
                 .AppendPathSegments("notes", ConfigNoteId)
@@ -123,7 +123,10 @@ namespace Ghoplin
                     })
                     .ReceiveJson().ConfigureAwait(false);
                 note.Id = response.id.ToString() as string;
+                Trace.Assert(string.IsNullOrWhiteSpace(note.Id));
+#pragma warning disable CS8603 // Possible null reference return.
                 return note.Id;
+#pragma warning restore CS8603 // Possible null reference return.
             }
             catch (FlurlHttpException)
             {
@@ -137,11 +140,15 @@ namespace Ghoplin
                         fields = "source_url,id"
                     })
                     .GetStringAsync();
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
                 var a = (JArray)JsonConvert.DeserializeObject(found);
-                var first = a.FirstOrDefault(i => i["source_url"].ToString() == note.Url);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                var first = a?.FirstOrDefault(i => i["source_url"]?.ToString() == note.Url);
                 if (first != null)
                 {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
                     note.Id = first["id"].ToString();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
                     Log.Debug("Found ID anyway: {id}", note.Id);
                     return note.Id;
                 }
@@ -159,11 +166,11 @@ namespace Ghoplin
                    title = tag,
                })
                .ReceiveJson().ConfigureAwait(false);
-            return new Tag
-            {
-                Id = newTag.id.ToString() as string,
-                Title = tag
-            };
+            return new Tag(
+#pragma warning disable CS8604 // Possible null reference argument.
+                newTag.id.ToString() as string,
+#pragma warning restore CS8604 // Possible null reference argument.
+                tag);
         }
 
         public async Task AssignTag(Tag tag, Note note)
@@ -194,18 +201,17 @@ namespace Ghoplin
             return JsonConvert.DeserializeObject<Notebook>(notebookResponse);
         }
 
-        private Notebook BuildNotebookFromResponse(dynamic notebookData, Notebook parent = null)
+        private Notebook BuildNotebookFromResponse(dynamic notebookData, Notebook? parent = null)
         {
-            var notebook = new Notebook
+            var notebook = new Notebook(notebookData.id)
             {
-                Id = notebookData.id,
                 Title = notebookData.title,
                 NoteCount = notebookData.note_count,
                 ParentId = notebookData.parent_id,
                 Parent = parent,
                 Children = Enumerable.Empty<Notebook>(),
             };
-            Debug.Assert(string.IsNullOrWhiteSpace(notebook.ParentId) || notebook.ParentId == notebook.Parent.Id);
+            Debug.Assert(string.IsNullOrWhiteSpace(notebook.ParentId) || notebook.ParentId == notebook.Parent?.Id);
             try
             {
                 var children = new List<Notebook>();

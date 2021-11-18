@@ -67,11 +67,8 @@ namespace Ghoplin
             var title = await _ghost.LoadBlogTitle(blogUrl, apiKey);
             Log.Information("Successfully connected to blog {blogTitle} at {blogUrl}", title, blogUrl);
 
-            var newBlog = new BlogConfig
+            var newBlog = new BlogConfig(blogUrl, apiKey, notebook.Id)
             {
-                ApiKey = apiKey,
-                BlogUrl = blogUrl,
-                NotebookId = notebook.Id,
                 AutoTags = autoTags == null
                     ? new List<string>()
                     : autoTags.ToList(),
@@ -86,7 +83,7 @@ namespace Ghoplin
 
         private async Task<Notebook> GetNotebookByIdOrTitle(string notebookId)
         {
-            Notebook notebook;
+            Notebook? notebook;
             try
             {
                 Log.Debug("Assuming ID. Trying to get Notebook with ID {notebookId}", notebookId);

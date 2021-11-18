@@ -51,7 +51,7 @@ namespace Ghoplin
             return results;
         }
 
-        public async Task<string> LoadBlogTitle(string blogUrl, string apiKey)
+        public async Task<string?> LoadBlogTitle(string blogUrl, string apiKey)
         {
             if (string.IsNullOrWhiteSpace(blogUrl)
                 || string.IsNullOrWhiteSpace(apiKey))

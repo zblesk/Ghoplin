@@ -23,7 +23,7 @@ namespace Ghoplin
         public static RootCommand CreateCli()
         {
             ConfigPath = Path.Join(
-                Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName),
+                Path.GetDirectoryName(System.Diagnostics.Process.GetCurrentProcess()?.MainModule?.FileName),
                 ConfigFileName);
             return new RootCommand("Ghoplin - a tool for syncing Ghost blog posts into Joplin")
             {
