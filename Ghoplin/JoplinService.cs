@@ -70,12 +70,22 @@ namespace Ghoplin
 
         public async Task<List<Tag>> LoadTags()
         {
-            var allTags = await _apiUrl
-                            .AppendPathSegment("tags")
-                            .SetQueryParam("token", _token)
-                            .GetStringAsync().ConfigureAwait(false);
-            var a = JsonConvert.DeserializeObject<TagPayload>(allTags);
-            return null;
+            var allTags = new List<Tag>();
+            bool cont;
+            int page = 0;
+            do
+            {
+                page++;
+                var response = await _apiUrl
+                                .AppendPathSegment("tags")
+                                .SetQueryParam("token", _token)
+                                .SetQueryParam("page", page)
+                                .GetStringAsync().ConfigureAwait(false);
+                var a = JsonConvert.DeserializeObject<TagPayload>(response);
+                cont = a.Has_More;
+                allTags.AddRange(a.Items);
+            } while (cont);
+            return allTags;
         }
 
         public async Task<NotebookList> GetNotebooks()
