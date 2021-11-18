@@ -55,10 +55,11 @@ namespace Ghoplin
 
         public async Task<GhoplinConfig> GetConfigNote()
         {
-            var configNote = await _apiUrl
+            var configNote1 = _apiUrl
                 .AppendPathSegments("notes", ConfigNoteId)
                 .SetQueryParam("token", _token)
-                .SetQueryParam("fields", "body")
+                .SetQueryParam("fields", "body");
+            var configNote = await configNote1
                 .GetJsonAsync().ConfigureAwait(false);
             if (configNote == null)
             {
@@ -73,7 +74,8 @@ namespace Ghoplin
                             .AppendPathSegment("tags")
                             .SetQueryParam("token", _token)
                             .GetStringAsync().ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<List<Tag>>(allTags);
+            var a = JsonConvert.DeserializeObject<TagPayload>(allTags);
+            return null;
         }
 
         public async Task<NotebookList> GetNotebooks()

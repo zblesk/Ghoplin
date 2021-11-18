@@ -1,7 +1,8 @@
 {
   "profiles": {
     "Ghoplin": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "sync -t d6a7b2b5e875297d5af8f6dc51c29796942631a3e0e099e4897abe6bbb7907c61075d9cda8c1faee18c8a58867b91c891165a3c43a9629bf2dc3d07116b25093"
     }
   }
 }
