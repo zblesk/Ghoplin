@@ -13,9 +13,9 @@ namespace Ghoplin
 {
     public static class CliCommands
     {
-        private static readonly Option VerbosityOption = new Option(new[] { "--verbose", "-v" }, "Verbose output") { Argument = new Argument<bool>(() => false) };
-        private static readonly Option JoplinPortOption = new Option(new[] { "--port", "-p" }, "Joplin's port (found on Web Clipper's settings page)") { Argument = new Argument<int>(() => DefaultPort) };
-        private static readonly Option JoplinTokenOption = new Option(new[] { "--token", "-t" }, "Joplin's token (found on Web Clipper's settings page)") { Argument = new Argument<string>(() => "") };
+        private static readonly Option<bool> VerbosityOption = new Option<bool>(new[] { "--verbose", "-v" }, () => false, "Verbose output");
+        private static readonly Option<int> JoplinPortOption = new Option<int>(new[] { "--port", "-p" }, () => DefaultPort, "Joplin's port (found on Web Clipper's settings page)");
+        private static readonly Option<string> JoplinTokenOption = new Option<string>(new[] { "--token", "-t" }, "Joplin's token (found on Web Clipper's settings page)");
         private const int DefaultPort = 41184;
         private const string ConfigFileName = ".ghoplin";
         private static string ConfigPath = ConfigFileName;
@@ -60,15 +60,15 @@ namespace Ghoplin
         private static Command CreateAddCommand()
         {
             Command addCommand = new Command("add", "Adds a new blog to be synchronized")
-                    {
-                        new Option(new[] {"--url", "-u" }, "URL of the Ghost blog's API") { Argument = new Argument<string>() },
-                        new Option(new[] {"--apiKey", "-k" }, "API key of the Ghost blog (get it in the blog's settings)") { Argument = new Argument<string>() },
-                        new Option(new[] {"--notebook", "-n" }, "The ID or name of the Joplin's notebook this blog will sync to") { Argument = new Argument<string>() },
-                        new Option(new[] {"--auto-tags" }, "A comma-separated list of tags that will be applied to every synced note in Joplin") { Argument = new Argument<string>(() => "") },
-                        VerbosityOption,
-                        JoplinPortOption,
-                        JoplinTokenOption,
-                    };
+            {
+                new Option<string>(new[] {"--url", "-u" }, "URL of the Ghost blog's API"),
+                new Option<string>(new[] {"--apiKey", "-k" }, "API key of the Ghost blog (get it in the blog's settings)"),
+                new Option<string>(new[] {"--notebook", "-n" }, "The ID or name of the Joplin's notebook this blog will sync to"),
+                new Option<string>(new[] {"--auto-tags" }, "A comma-separated list of tags that will be applied to every synced note in Joplin"),
+                VerbosityOption,
+                JoplinPortOption,
+                JoplinTokenOption,
+            };
             addCommand.Handler = CommandHandler.Create<string, string, string, string, bool, int, string>(DoAdd);
             return addCommand;
         }
