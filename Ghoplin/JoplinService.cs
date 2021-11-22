@@ -130,7 +130,7 @@ namespace Ghoplin
                     })
                     .ReceiveJson().ConfigureAwait(false);
                 note.Id = response.id.ToString() as string;
-                Trace.Assert(string.IsNullOrWhiteSpace(note.Id));
+                Trace.Assert(!string.IsNullOrWhiteSpace(note.Id));
 #pragma warning disable CS8603 // Possible null reference return.
                 return note.Id;
 #pragma warning restore CS8603 // Possible null reference return.
