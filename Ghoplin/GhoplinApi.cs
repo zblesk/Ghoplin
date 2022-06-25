@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using zblesk.Joplin;
 
 namespace Ghoplin;
 
@@ -12,13 +13,15 @@ internal class GhoplinApi
     private readonly string _token;
     private readonly string _apiUrl;
     private readonly JoplinService _joplin;
+    private readonly JoplinApi _joplinApi;
     private readonly GhostService _ghost;
 
-    public GhoplinApi(string apiUrl, string token)
+    public GhoplinApi(string apiUrl, string token, int port)
     {
         _token = token;
         _apiUrl = apiUrl;
         _joplin = new JoplinService(_apiUrl, _token);
+        _joplinApi = new JoplinApi(token, port);
         _ghost = new GhostService();
     }
 
@@ -26,8 +29,23 @@ internal class GhoplinApi
     {
         Log.Debug("Starting Sync");
         var config = await LoadConfig();
-        var tags = await _joplin.LoadTags();
         var totalNewNotes = 0;
+        totalNewNotes = await LoadBlogPosts(config, totalNewNotes);
+
+        if (config.Level != null
+            && !config.Level.Disabled)
+        {
+            var level = new LevelService(_joplinApi, config.Level);
+            totalNewNotes += await level.Sync();
+        }
+
+        Log.Information("Done. Added {newNotes} new notes.", totalNewNotes);
+        await _joplin.UpdateConfigNote(config);
+    }
+
+    private async Task<int> LoadBlogPosts(GhoplinConfig config, int totalNewNotes)
+    {
+        var tags = await _joplin.LoadTags();
         foreach (var blog in config.Blogs.Where(blog => !blog.Disabled))
         {
             try
@@ -39,8 +57,8 @@ internal class GhoplinApi
                 Log.Error(ex, "An error while updating {blogUrl}", blog.BlogUrl);
             }
         }
-        Log.Information("Done. Added {newNotes} new notes.", totalNewNotes);
-        await _joplin.UpdateConfigNote(config);
+
+        return totalNewNotes;
     }
 
     public async Task AddBlog(string apiKey, string blogUrl, string notebookId, params string[] autoTags)

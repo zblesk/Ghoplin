@@ -122,7 +122,6 @@ public class JoplinService
                     parent_id = notebookId,
                     title = note.Title,
                     body_html = note.Content,
-                    
                     source_url = note.Url ?? "",
                     base_url = url,
                     user_created_time = note.Timestamp?.ToUnixTimestampMiliseconds().ToString(),
@@ -131,9 +130,7 @@ public class JoplinService
                 .ReceiveJson().ConfigureAwait(false);
             note.Id = response.id.ToString() as string;
             Trace.Assert(!string.IsNullOrWhiteSpace(note.Id));
-#pragma warning disable CS8603 // Possible null reference return.
-            return note.Id;
-#pragma warning restore CS8603 // Possible null reference return.
+            return note.Id!;
         }
         catch (FlurlHttpException)
         {

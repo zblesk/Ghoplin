@@ -141,7 +141,8 @@ public static class CliCommands
 
         var ghoplin = new GhoplinApi(
             $"http://localhost:{port}/",
-            token);
+            token,
+            port);
         return ghoplin;
     }
 
