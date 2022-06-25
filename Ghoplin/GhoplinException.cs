@@ -1,25 +1,24 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Ghoplin
+namespace Ghoplin;
+
+[Serializable]
+internal class GhoplinException : Exception
 {
-    [Serializable]
-    internal class GhoplinException : Exception
+    public GhoplinException()
     {
-        public GhoplinException()
-        {
-        }
+    }
 
-        public GhoplinException(string message) : base(message)
-        {
-        }
+    public GhoplinException(string message) : base(message)
+    {
+    }
 
-        public GhoplinException(string message, Exception innerException) : base(message, innerException)
-        {
-        }
+    public GhoplinException(string message, Exception innerException) : base(message, innerException)
+    {
+    }
 
-        protected GhoplinException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected GhoplinException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }

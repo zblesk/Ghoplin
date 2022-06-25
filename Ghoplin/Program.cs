@@ -1,14 +1,13 @@
 ﻿using System;
 using System.CommandLine;
 
-namespace Ghoplin
+namespace Ghoplin;
+
+internal static class Program
 {
-    internal static class Program
+    private static void Main(string[] args)
     {
-        private static void Main(string[] args)
-        {
-            var command = CliCommands.CreateCli();
-            command.InvokeAsync(args).Wait();
-        }
+        var command = CliCommands.CreateCli();
+        command.InvokeAsync(args).Wait();
     }
 }
