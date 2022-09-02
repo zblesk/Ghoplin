@@ -83,6 +83,7 @@ internal class LevelService
             title = $"Level {issue}",
             body_html = note,
             is_todo = 1,
+            source_url = url,
             parent_id = _config.NotebookId
         });
         var fixedBody = joplinNote!.body!.Replace("####", "#").Replace("##", "#");
