@@ -14,7 +14,7 @@ using JNote = zblesk.Joplin.Note;
 
 namespace Ghoplin;
 
-internal class LevelService
+public class LevelService
 {
     private readonly JoplinApi _joplin;
     private readonly LevelConfig _config;
@@ -87,6 +87,14 @@ internal class LevelService
             parent_id = _config.NotebookId
         });
         var fixedBody = joplinNote!.body!.Replace("####", "#").Replace("##", "#");
+        // Fix image and its location
+        fixedBody = Regex.Replace(
+            fixedBody,
+            @"\[!\[(\]\(:/[a-z0-9]{32}\))\]\(http.+?.jpg\)",
+            $"\n\n![Obalka Levelu {issue}$1",
+            RegexOptions.IgnoreCase
+            | RegexOptions.Multiline
+            | RegexOptions.CultureInvariant);
         var pos3 = fixedBody.IndexOf("REDAKCE") + 8;
         var toFix = fixedBody[pos3..];
         var replaced = Regex.Replace(toFix,
