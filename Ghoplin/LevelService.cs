@@ -95,6 +95,13 @@ public class LevelService
             RegexOptions.IgnoreCase
             | RegexOptions.Multiline
             | RegexOptions.CultureInvariant);
+        fixedBody = Regex.Replace(
+            fixedBody,
+            "POZOR! POKUD SI CHCETE LEVEL KOUPIT BEZ TOHO ABYSTE MUSELI.+\n",
+            "",
+            RegexOptions.IgnoreCase
+            | RegexOptions.Multiline
+            | RegexOptions.CultureInvariant);
         var pos3 = fixedBody.IndexOf("REDAKCE") + 8;
         var toFix = fixedBody[pos3..];
         var replaced = Regex.Replace(toFix,
