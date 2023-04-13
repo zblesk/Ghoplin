@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection.Emit;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Fizzler.Systems.HtmlAgilityPack;
 using HtmlAgilityPack;
 using Serilog;
+using zblesk.Helpers;
 using zblesk.Joplin;
 using JNote = zblesk.Joplin.Note;
 
@@ -50,68 +52,86 @@ public class LevelService
         return totalNewNotes;
     }
 
-    public async Task<JNote> FetchIssue(int issue)
+    public async Task<JNote> FetchIssue(int level)
     {
-        Log.Information("Fetching Level {issue}", issue);
+        Log.Information("Fetching Level {issue}", level);
+
         using var client = new HttpClient();
-        var url = $"http://www.level.cz/starsi-cisla/level-{issue}/";
+        var url = $"https://www.level.cz/level/level-{level}/";
+
         string downloadString = await client.GetStringAsync(url);
+
         var html = new HtmlDocument();
         html.LoadHtml(downloadString);
 
         var document = html.DocumentNode;
-        var body = document.QuerySelector(".theme-info > div:nth-child(1)").InnerHtml;
-        var fuj = "send@send.cz</a></em></p>";
-        var fuj2 = "send@send.cz)</a></em></p>";
-        var pos = body.IndexOf(fuj);
-        if (pos > 0)
+        var vydanie = document.QuerySelector(".push-left").Attributes["data-date"].Value;
+        vydanie = vydanie
+            .ToLower()
+            .Replace("leden", "Január")
+            .Replace("únor", "Február")
+            .Replace("březen", "Marec")
+            .Replace("duben", "Apríl")
+            .Replace("květen", "Máj")
+            .Replace("červen", "Jún")
+            .Replace("červenec", "Júl")
+            .Replace("srpen", "August")
+            .Replace("září", "September")
+            .Replace("říjen", "Október")
+            .Replace("listopad", "November")
+            .Replace("prosinec", "December");
+
+        var artikel = document.QuerySelector("#post-content-article")?.InnerText.Trim();
+        artikel = Regex.Replace(artikel, @"POZOR! POKUD SI.+ ZDARMA!\)", "")
+            .Replace(new string(new char[] { '\uFEFF' }), "");
+
+        var obrazok = document.QuerySelector(".attachment-post-thumb").OuterHtml;
+
+        var noteText = new StringBuilder($@"
+{obrazok}
+
+{artikel}
+
+
+{vydanie}");
+        var table = document.QuerySelectorAll("#post-content-index .tableview-row");
+
+        noteText.AppendLine();
+        foreach (var row in table)
         {
-            body = body.Remove(0, pos + fuj.Length);
+            var nadpisSekcie = row.QuerySelector("h3").InnerText;
+
+            noteText.AppendLine($"<h1>{nadpisSekcie}</h1>");
+            foreach (var clanok in row.QuerySelectorAll("ul"))
+            {
+                var info =
+                    clanok.QuerySelectorAll("li")
+                    .Select(li =>
+                        li.InnerText
+                        .Trim()
+                        .Replace("\t", "")
+                        .Replace("- ", " - ")
+                    ).Take(2).ToList();
+                var nadpis = info?[0];
+                var autor = info?[1];
+                noteText.Append($"<h2>{nadpis}</h2>");
+                noteText.AppendLine($"Autor: {autor}");
+            }
+            noteText.AppendLine();
         }
-        var pos2 = body.IndexOf(fuj2);
-        if (pos2 > 0)
+
+        var note = noteText.ToString().Trim();
+        note = note.Replace("\n", "<br />\n");
+        note.Dump();
+
+        var n = (new JNote
         {
-            body = body.Remove(0, pos2 + fuj2.Length);
-        }
-        var note = body
-            .Replace("<strong>", "").Replace("</strong>", "")
-            .Replace("<h3>OBSAH", "<h1>OBSAH")
-            .Replace("h3>", "h2>")
-            ;
-        var joplinNote = await _joplin.Add(new JNote
-        {
-            title = $"Level {issue}",
+            title = $"Level {level}",
             body_html = note,
             is_todo = 1,
-            source_url = url,
             parent_id = _config.NotebookId
         });
-        var fixedBody = joplinNote!.body!.Replace("####", "#").Replace("##", "#");
-        // Fix image and its location
-        fixedBody = Regex.Replace(
-            fixedBody,
-            @"\[!\[(\]\(:/[a-z0-9]{32}\))\]\(http.+?.jpg\)",
-            $"\n\n![Obalka Levelu {issue}$1",
-            RegexOptions.IgnoreCase
-            | RegexOptions.Multiline
-            | RegexOptions.CultureInvariant);
-        fixedBody = Regex.Replace(
-            fixedBody,
-            "POZOR! POKUD SI CHCETE LEVEL KOUPIT BEZ TOHO ABYSTE MUSELI.+\n",
-            "",
-            RegexOptions.IgnoreCase
-            | RegexOptions.Multiline
-            | RegexOptions.CultureInvariant);
-        var pos3 = fixedBody.IndexOf("REDAKCE") + 8;
-        var toFix = fixedBody[pos3..];
-        var replaced = Regex.Replace(toFix,
-            @"(^\p{L}.*)",
-            "## $1",
-            RegexOptions.IgnoreCase
-            | RegexOptions.Multiline
-            | RegexOptions.CultureInvariant);
-        joplinNote.body = fixedBody[..pos3] + replaced;
-        await _joplin.Update(joplinNote);
+        var joplinNote = await _joplin.Add(n);
         return joplinNote;
     }
 }
