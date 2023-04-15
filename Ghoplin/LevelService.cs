@@ -84,6 +84,7 @@ public class LevelService
         var artikel = document.QuerySelector("#post-content-article")?.InnerText.Trim();
         artikel = Regex.Replace(artikel, @"POZOR! POKUD SI.+ ZDARMA!\)", "")
             .Replace(new string(new char[] { '\uFEFF' }), "");
+        artikel = Regex.Replace(artikel, @"Starší čísla .+send.cz", "");
 
         var obrazok = document.QuerySelector(".attachment-post-thumb").OuterHtml;
 
@@ -115,14 +116,13 @@ public class LevelService
                 var nadpis = info?[0];
                 var autor = info?[1];
                 noteText.Append($"<h2>{nadpis}</h2>");
-                noteText.AppendLine($"Autor: {autor}");
+                if (!string.IsNullOrWhiteSpace(autor))
+                    noteText.AppendLine($"<i>Autor: {autor}</i>");
             }
-            noteText.AppendLine();
         }
 
         var note = noteText.ToString().Trim();
         note = note.Replace("\n", "<br />\n");
-        note.Dump();
 
         var n = (new JNote
         {
@@ -132,6 +132,11 @@ public class LevelService
             parent_id = _config.NotebookId
         });
         var joplinNote = await _joplin.Add(n);
+        joplinNote.body = Regex.Replace(joplinNote!.body!, @"## (.+)\n+\*Autor:", "## $1\n*Autor:",
+            RegexOptions.IgnoreCase
+            | RegexOptions.Multiline
+            | RegexOptions.CultureInvariant);
+        await _joplin.Update(joplinNote);
         return joplinNote;
     }
 }
